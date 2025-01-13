@@ -1,4 +1,4 @@
-import { CommandInteraction, SlashCommandBuilder, EmbedBuilder, type APIEmbed } from "discord.js";
+import { CommandInteraction, SlashCommandBuilder, MessageEmbed } from "discord.js";
 import { GameDig } from 'gamedig';
 
 import storedServerList from '../../servers.json' with { type: "json" };
@@ -34,20 +34,32 @@ const gameTypeMap: { [key: string]: string } = {
     "armareforger": "Reforger"
 }
 
-async function generateEmbed(type: string | undefined, host: string | undefined, port: number | undefined): Promise<EmbedBuilder | undefined> {
+async function generateEmbed(type: string | undefined, host: string | undefined, port: number | undefined): Promise<MessageEmbed | undefined> {
     // make sure type, host and port are defined or return undefined
     if (!type || !host || !port) {
         return undefined;
     }
     var status = await queryGameDig(type, host, port);
-    const embed = new EmbedBuilder()
+    const embed = new MessageEmbed()
         .setTitle(status.name)
         .setDescription("Running " + gameTypeMap[type] + " version: " + status.version)
         .addFields(
-            { name: "Status", value: status.numplayers + "/" + status.maxplayers },
+            {
+                name: "Status",
+                value: status.numplayers + "/" + status.maxplayers,
+                inline: true
+            },
             // Allow connect info in configuration json; TODO
-            // { name: "Connection Info", value: status.connect },
-            { name: "Map Code", value: status.map }
+            // {
+            //     name: "Connection Info",
+            //     value: status.connect,
+            //     inline: true
+            // },
+            {
+                name: "Map Code",
+                value: status.map,
+                inline: true
+            }
         );
     return embed;
 }
@@ -57,15 +69,16 @@ export const data = new SlashCommandBuilder()
     .setDescription("Get Reforger Server status");
 
 export async function execute(interaction: CommandInteraction) {
-    var emeds: APIEmbed[] = [];
+    var embeds: MessageEmbed[] = [];
     serverList.forEach(async server => {
+        // if undefined, skip it
         var embed = await generateEmbed(server.type, server.host, server.port);
         if (embed) {
-            emeds.push(embed.toJSON());
+            embeds.push(embed);
         }
     });
     return interaction.reply({
-        embeds: emeds
+        embeds: embeds 
     });
 }
 
