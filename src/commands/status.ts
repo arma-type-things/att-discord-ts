@@ -22,10 +22,11 @@ async function generateEmbed() {
                 name: "Status",
                 value: status.numplayers + "/" + status.maxplayers
             },
-            {
-                name: "Connection Info",
-                value: status.connect
-            },
+            // Allow connect info in configuration json; TODO
+            // {
+            //     name: "Connection Info",
+            //     value: status.connect
+            // },
             {
                 name: "Map Code",
                 value: status.map
