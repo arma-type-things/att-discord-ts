@@ -1,22 +1,32 @@
 import { CommandInteraction, SlashCommandBuilder, Embed } from "discord.js";
 import { GameDig } from 'gamedig';
 
-async function queryGameDig() {
+async function queryGameDig(type: string, host: string, port: number) {
     const result = await GameDig.query({
-        type: 'armareforger',
-        host: '172.96.164.58',
-        port: 7931,
+        type: type,
+        host: host,
+        port: port,
         givenPortOnly: true
     });
 
     return result;
 }
 
-async function generateEmbed() {
-    var status = await queryGameDig();
+// map of string to string representing the game type and what to display in the embed
+const gameTypeMap: { [key: string]: string } = {
+    "arma3": "Arma 3",
+    "armareforger": "Reforger"
+}
+
+async function generateEmbed(type: string | undefined, host: string | undefined, port: number | undefined) {
+    // make sure type, host and port are defined or return undefined
+    if (!type || !host || !port) {
+        return undefined;
+    }
+    var status = await queryGameDig(type, host, port);
     return {
         title: status.name,
-        description: "Running version: " + status.version,
+        description: "Running " + gameTypeMap[type] + " version: " + status.version,
         fields: [
             {
                 name: "Status",
@@ -40,7 +50,17 @@ export const data = new SlashCommandBuilder()
     .setDescription("Get Reforger Server status");
 
 export async function execute(interaction: CommandInteraction) {
-    var embed = await generateEmbed();
+    // TODO: load this from configuration
+    var type = 'armareforger';
+    var host = '172.96.164.58';
+    var port = 7931;
+    var embed = await generateEmbed(type, host, port);
+    if (!embed) {
+        return interaction.reply({
+            content: "Server status is not available",
+            ephemeral: true
+        });
+    }
     return interaction.reply({
         embeds: [embed] 
     });
