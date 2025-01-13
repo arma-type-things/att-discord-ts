@@ -13,6 +13,6 @@
     "@types/node": "^22.10.5",
     "discord.js": "^14.17.3",
     "dotenv": "^16.4.7",
-    "gamedig": "git@github.com:gamedig/node-gamedig.git"
+    "gamedig": "^5.1.4"
   }
 }
