@@ -1,5 +1,7 @@
-import { CommandInteraction, SlashCommandBuilder, Embed } from "discord.js";
+import { CommandInteraction, SlashCommandBuilder, EmbedBuilder, type APIEmbed } from "discord.js";
 import { GameDig } from 'gamedig';
+
+import storedServerList from '../../servers.json' with { type: "json" };
 
 async function queryGameDig(type: string, host: string, port: number) {
     const result = await GameDig.query({
@@ -12,37 +14,42 @@ async function queryGameDig(type: string, host: string, port: number) {
     return result;
 }
 
+const defaultServerList: [{
+    type: string,
+    host: string,
+    port: number
+}] = [
+    {
+        "type": "armareforger",
+        "host": "172.96.164.58",
+        "port": 7931
+    }
+]
+
+var serverList = storedServerList || defaultServerList;
+
 // map of string to string representing the game type and what to display in the embed
 const gameTypeMap: { [key: string]: string } = {
     "arma3": "Arma 3",
     "armareforger": "Reforger"
 }
 
-async function generateEmbed(type: string | undefined, host: string | undefined, port: number | undefined) {
+async function generateEmbed(type: string | undefined, host: string | undefined, port: number | undefined): Promise<EmbedBuilder | undefined> {
     // make sure type, host and port are defined or return undefined
     if (!type || !host || !port) {
         return undefined;
     }
     var status = await queryGameDig(type, host, port);
-    return {
-        title: status.name,
-        description: "Running " + gameTypeMap[type] + " version: " + status.version,
-        fields: [
-            {
-                name: "Status",
-                value: status.numplayers + "/" + status.maxplayers
-            },
+    const embed = new EmbedBuilder()
+        .setTitle(status.name)
+        .setDescription("Running " + gameTypeMap[type] + " version: " + status.version)
+        .addFields(
+            { name: "Status", value: status.numplayers + "/" + status.maxplayers },
             // Allow connect info in configuration json; TODO
-            // {
-            //     name: "Connection Info",
-            //     value: status.connect
-            // },
-            {
-                name: "Map Code",
-                value: status.map
-            }
-        ]
-    }
+            // { name: "Connection Info", value: status.connect },
+            { name: "Map Code", value: status.map }
+        );
+    return embed;
 }
 
 export const data = new SlashCommandBuilder()
@@ -50,19 +57,15 @@ export const data = new SlashCommandBuilder()
     .setDescription("Get Reforger Server status");
 
 export async function execute(interaction: CommandInteraction) {
-    // TODO: load this from configuration
-    var type = 'armareforger';
-    var host = '172.96.164.58';
-    var port = 7931;
-    var embed = await generateEmbed(type, host, port);
-    if (!embed) {
-        return interaction.reply({
-            content: "Server status is not available",
-            ephemeral: true
-        });
-    }
+    var emeds: APIEmbed[] = [];
+    serverList.forEach(async server => {
+        var embed = await generateEmbed(server.type, server.host, server.port);
+        if (embed) {
+            emeds.push(embed.toJSON());
+        }
+    });
     return interaction.reply({
-        embeds: [embed] 
+        embeds: emeds
     });
 }
 
