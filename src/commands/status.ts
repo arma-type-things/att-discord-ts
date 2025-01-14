@@ -86,7 +86,9 @@ async function gatherEmbeds(servers: {
 }[]) {
     var embeds: EmbedBuilder[] = [];
     servers.forEach(async server => {
+        console.log("Querying server: " + server.host + ":" + server.port);
         var status = await queryGameDig(server.type, server.host, server.port);
+        console.log("Status: " + status);
         var embed = generateEmbed(server.type, status);
         // if undefined, skip it
         if (embed) {
