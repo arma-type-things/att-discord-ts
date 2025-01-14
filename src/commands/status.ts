@@ -1,5 +1,5 @@
 import { CommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
-import { GameDig } from 'gamedig';
+import { GameDig, type QueryResult } from 'gamedig';
 
 import storedServerList from '../../servers.json' with { type: "json" };
 
@@ -34,12 +34,12 @@ const gameTypeMap: { [key: string]: string } = {
     "armareforger": "Reforger"
 }
 
-async function generateEmbed(type: string | undefined, host: string | undefined, port: number | undefined) {
+function generateEmbed(type: string, status: QueryResult) {
     // make sure type, host and port are defined or return undefined
-    if (!type || !host || !port) {
-        return undefined;
-    }
-    var status = await queryGameDig(type, host, port);
+    // if (!type || !host || !port) {
+    //     return undefined;
+    // }
+    // var status = await queryGameDig(type, host, port);
     const embed = new EmbedBuilder()
         .setTitle(status.name)
         .setDescription("Running " + gameTypeMap[type] + " version: " + status.version)
@@ -69,17 +69,26 @@ export const data = new SlashCommandBuilder()
     .setDescription("Get Reforger Server status");
 
 export async function execute(interaction: CommandInteraction) {
+    await interaction.deferReply();
+    return interaction.editReply({
+        embeds: await gatherEmbeds(serverList) 
+    });
+}
+
+async function gatherEmbeds(servers: {
+    type: string,
+    host: string,
+    port: number
+}[]) {
     var embeds: EmbedBuilder[] = [];
-    interaction.deferReply();
-    serverList.forEach(async server => {
+    servers.forEach(async server => {
+        var status = await queryGameDig(server.type, server.host, server.port);
+        var embed = generateEmbed(server.type, status);
         // if undefined, skip it
-        var embed = await generateEmbed(server.type, server.host, server.port);
         if (embed) {
             embeds.push(embed);
         }
     });
-    return interaction.editReply({
-        embeds: embeds 
-    });
+    return embeds;
 }
 
