@@ -1,0 +1,12 @@
+[
+    {
+        "type": "armareforger",
+        "host": "localhost",
+        "port": 3000
+    },
+    {
+        "type": "arma3",
+        "host": "localhost",
+        "port": 2302
+    }
+]
