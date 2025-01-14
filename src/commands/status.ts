@@ -70,14 +70,31 @@ export const data = new SlashCommandBuilder()
 
 export async function execute(interaction: CommandInteraction) {
     await interaction.deferReply();
-    const embeds = await gatherEmbeds(serverList);
-    if (embeds.length === 0) {
-        return interaction.editReply("No servers available");
-    }
-    return interaction.editReply({
-        embeds: embeds 
-    });
+
+    await injectEmbeds(interaction);
 }
+
+async function injectEmbeds(interaction: CommandInteraction) {
+    var count = 0;
+    serverList.forEach(async server => {
+        console.log("Querying server: " + server.host + ":" + server.port);
+        var status = await queryGameDig(server.type, server.host, server.port);
+        console.log("Status: " + status.name + " " + status.numplayers + "/" + status.maxplayers);
+        var embed = generateEmbed(server.type, status);
+        // if undefined, skip it
+        if (embed) {
+            count++;
+            await interaction.followUp({
+                embeds: [embed]
+            });
+        }
+    });
+
+    if (count == 0) {
+        await interaction.followUp("No servers are currently online.");
+    }
+}
+
 
 async function gatherEmbeds(servers: {
     type: string,
