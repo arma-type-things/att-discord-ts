@@ -70,8 +70,12 @@ export const data = new SlashCommandBuilder()
 
 export async function execute(interaction: CommandInteraction) {
     await interaction.deferReply();
+    const embeds = await gatherEmbeds(serverList);
+    if (embeds.length === 0) {
+        return interaction.editReply("No servers available");
+    }
     return interaction.editReply({
-        embeds: await gatherEmbeds(serverList) 
+        embeds: embeds 
     });
 }
 
