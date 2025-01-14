@@ -76,7 +76,9 @@ export async function execute(interaction: CommandInteraction) {
 
 async function injectEmbeds(interaction: CommandInteraction) {
     var count = 0;
-    serverList.forEach(async server => {
+
+    for(let i = 0; i < serverList.length; i++) {
+        let server = serverList[i];
         console.log("Querying server: " + server.host + ":" + server.port);
         var status = await queryGameDig(server.type, server.host, server.port);
         console.log("Status: " + status.name + " " + status.numplayers + "/" + status.maxplayers);
@@ -88,7 +90,7 @@ async function injectEmbeds(interaction: CommandInteraction) {
                 embeds: [embed]
             });
         }
-    });
+    }
 
     if (count == 0) {
         await interaction.followUp("No servers are currently online.");
