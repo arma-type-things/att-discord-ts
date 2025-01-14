@@ -34,7 +34,7 @@ const gameTypeMap: { [key: string]: string } = {
     "armareforger": "Reforger"
 }
 
-async function generateEmbed(type: string | undefined, host: string | undefined, port: number | undefined): Promise<EmbedBuilder | undefined> {
+async function generateEmbed(type: string | undefined, host: string | undefined, port: number | undefined) {
     // make sure type, host and port are defined or return undefined
     if (!type || !host || !port) {
         return undefined;
@@ -70,6 +70,7 @@ export const data = new SlashCommandBuilder()
 
 export async function execute(interaction: CommandInteraction) {
     var embeds: EmbedBuilder[] = [];
+    interaction.deferReply();
     serverList.forEach(async server => {
         // if undefined, skip it
         var embed = await generateEmbed(server.type, server.host, server.port);
@@ -77,7 +78,7 @@ export async function execute(interaction: CommandInteraction) {
             embeds.push(embed);
         }
     });
-    return interaction.reply({
+    return interaction.editReply({
         embeds: embeds 
     });
 }
