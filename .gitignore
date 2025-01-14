@@ -135,3 +135,6 @@ dist
 # bot-specific
 bot
 servers.json
+
+# just no
+*.sqlite
