@@ -1,6 +1,8 @@
 import {CommandInteraction, EmbedBuilder, SlashCommandBuilder} from "discord.js";
 import {GameDig, type QueryResult} from 'gamedig';
 
+// TODO: safe empty default value, backed by this file
+// TODO: make this a guild data thing
 import storedServerList from '../../servers.json' with {type: 'json'};
 
 async function queryGameDig(type: string, host: string, port: number) {
@@ -12,7 +14,7 @@ async function queryGameDig(type: string, host: string, port: number) {
     });
 }
 
-// let fromFileServerList: { type: string, host: string, port: number }[] = [];
+// let fromFileServerList: { type: string, host: string, port: number }[] = await loadServerList();
 // async function loadServerList(): Promise<{type: string, host: string, port: number}[]> {
 //     const storedServerListFile = Bun.file("../../servers.json");
 //     if (await storedServerListFile.exists()) {
