@@ -1,6 +1,8 @@
 import { Client } from "discord.js";
 import { config } from "./config";
 import { commands } from "./commands";
+import { dataStore} from "./internals/datastore.ts";
+import { roleManager } from "./internals/role-manager.ts";
 import { deployCommands } from "./deploy-commands";
 
 const client = new Client({
@@ -8,7 +10,7 @@ const client = new Client({
 });
 
 client.once("ready", () => {
-  console.log("Discord bot is ready! 🤖");
+  console.log("🤖 And I'm ready...");
 });
 
 client.on("guildCreate", async (guild) => {
@@ -21,8 +23,8 @@ client.on("interactionCreate", async (interaction) => {
   }
   const { commandName } = interaction;
   if (commands[commandName as keyof typeof commands]) {
-    commands[commandName as keyof typeof commands].execute(interaction);
+    await commands[commandName as keyof typeof commands].execute(interaction);
   }
 });
 
-client.login(config.DISCORD_TOKEN);
+client.login(config.DISCORD_TOKEN).then(() => console.log("🤖 I'm alive..."));
