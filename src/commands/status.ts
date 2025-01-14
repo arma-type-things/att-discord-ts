@@ -35,11 +35,6 @@ const gameTypeMap: { [key: string]: string } = {
 }
 
 function generateEmbed(type: string, status: QueryResult) {
-    // make sure type, host and port are defined or return undefined
-    // if (!type || !host || !port) {
-    //     return undefined;
-    // }
-    // var status = await queryGameDig(type, host, port);
     const embed = new EmbedBuilder()
         .setTitle(status.name)
         .setDescription("Running " + gameTypeMap[type] + " version: " + status.version)
@@ -49,12 +44,6 @@ function generateEmbed(type: string, status: QueryResult) {
                 value: status.numplayers + "/" + status.maxplayers,
                 inline: true
             },
-            // Allow connect info in configuration json; TODO
-            // {
-            //     name: "Connection Info",
-            //     value: status.connect,
-            //     inline: true
-            // },
             {
                 name: "Map Code",
                 value: status.map,
@@ -79,9 +68,9 @@ async function injectEmbeds(interaction: CommandInteraction) {
 
     for(let i = 0; i < serverList.length; i++) {
         let server = serverList[i];
-        console.log("Querying server: " + server.host + ":" + server.port);
+        // console.log("Querying server: " + server.host + ":" + server.port);
         var status = await queryGameDig(server.type, server.host, server.port);
-        console.log("Status: " + status.name + " " + status.numplayers + "/" + status.maxplayers);
+        // console.log("Status: " + status.name + " " + status.numplayers + "/" + status.maxplayers);
         var embed = generateEmbed(server.type, status);
         // if undefined, skip it
         if (embed) {
@@ -96,24 +85,3 @@ async function injectEmbeds(interaction: CommandInteraction) {
         await interaction.followUp("No servers are currently online.");
     }
 }
-
-
-async function gatherEmbeds(servers: {
-    type: string,
-    host: string,
-    port: number
-}[]): Promise<EmbedBuilder[]> {
-    var embeds: EmbedBuilder[] = [];
-    servers.forEach(async server => {
-        console.log("Querying server: " + server.host + ":" + server.port);
-        var status = await queryGameDig(server.type, server.host, server.port);
-        console.log("Status: " + status.name + " " + status.numplayers + "/" + status.maxplayers);
-        var embed = generateEmbed(server.type, status);
-        // if undefined, skip it
-        if (embed) {
-            embeds.push(embed);
-        }
-    });
-    return embeds;
-}
-
