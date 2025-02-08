@@ -102,7 +102,8 @@ dist
 
 # vuepress v2.x temp and cache directory
 .temp
-.cache
+# handled by parcel-bundler section above
+# .cache
 
 # Docusaurus cache and generated files
 .docusaurus
@@ -129,6 +130,12 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+# idea
+.idea/
+
 # bot-specific
 bot
 servers.json
+
+# just no
+*.sqlite
