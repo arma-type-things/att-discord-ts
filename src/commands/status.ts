@@ -30,6 +30,25 @@ const gameTypeMap: { [key: string]: string } = {
     "armareforger": "Reforger"
 }
 
+function generateErrorEmbed(serverType: string, serverHost: string) {
+
+    return new EmbedBuilder()
+        .setTitle("Woops! No response from server at " + serverHost)
+        .setDescription("Could not connect to the " + gameTypeMap[serverType] + " server at " + serverHost + " to get the status. Try again later.")
+        .addFields(
+            {
+                name: "Status",
+                value: "Down",
+                inline: true
+            },
+            {
+                name: "Map Code",
+                value: "N/A",
+                inline: true
+            }
+        );
+}
+
 function generateEmbed(type: string, status: QueryResult) {
     return new EmbedBuilder()
         .setTitle(status.name)
@@ -64,21 +83,26 @@ async function injectEmbeds(interaction: CommandInteraction) {
     for(let i = 0; i < serverList.length; i++) {
         let server = serverList[i];
         // console.log("Querying server: " + server.host + ":" + server.port);
-        const status = await queryGameDig(server.type, server.host, server.port);
-        // console.log("Status: " + status.name + " " + status.numplayers + "/" + status.maxplayers);
-        const embed = generateEmbed(server.type, status);
-        // if undefined, skip it
-        if (embed) {
-            count++;
-            let message = await interaction.followUp({
-                embeds: [embed]
-            });
-            let deleteHandler = async () => {
-                if (message.deletable) {
-                    await message.delete();
+        try {
+            const status = await queryGameDig(server.type, server.host, server.port);
+            // console.log("Status: " + status.name + " " + status.numplayers + "/" + status.maxplayers);
+            const embed = generateEmbed(server.type, status);
+            // if undefined, skip it
+            if (embed) {
+                count++;
+                let message = await interaction.followUp({
+                    embeds: [embed]
+                });
+                let deleteHandler = async () => {
+                    if (message.deletable) {
+                        await message.delete();
+                    }
                 }
+                setTimeout(deleteHandler, 30000);
             }
-            setTimeout(deleteHandler, 30000);
+        } catch (error) {
+            console.error("Error querying server: " + server.host + ":" + server.port + " " + error);
+            return generateErrorEmbed(server.type, server.host);
         }
     }
 
